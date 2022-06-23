@@ -5,8 +5,9 @@ import mongoId from "joi-objectid";
 joi.objectId = mongoId(joi);
 
 export const joiPaginationSchema = joi.object().keys({
-  page: joi.number().min(1).max(3000),
-  limit: joi.number().min(5).max(1000),
+  page: joi.number().min(0).max(3000),
+  limit: joi.number().min(0).max(1000),
+  sort: joi.number().min(-1).max(1)
 });
 
 export const joiCreateNewPostSchema = joi.object().keys({

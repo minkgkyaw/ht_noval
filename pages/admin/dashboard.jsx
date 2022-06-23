@@ -9,8 +9,9 @@ import MenuBookIcon from "@mui/icons-material/MenuBook";
 import SupervisedUserCircleIcon from "@mui/icons-material/SupervisedUserCircle";
 import PersonIcon from "@mui/icons-material/Person";
 import NewPost from "../../components/NewPost";
-import ManagePosts from "../../components/ManagePosts";
+import ManagePosts from "../../components/ListPosts";
 import { useGetPosts } from "../../hook/useFetchPosts";
+import ManageAllPosts from "../../components/ManageAllPosts";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -54,7 +55,6 @@ function a11yProps(index) {
 }
 
 export default function Dashboard() {
-  const {isError, isLoading, posts} = useGetPosts()
   const [value, setValue] = React.useState(0);
 
   const handleChange = (event, newValue) => {
@@ -108,13 +108,7 @@ export default function Dashboard() {
         />
       </Tabs>
       <TabPanel value={value} index={0} style={{ width: "62vw" }}>
-        <Typography variant="h4" align="center">
-          Manage All Post/Chapters
-        </Typography>
-        <Box p={3}>
-          <NewPost chapters={posts?.meta?.total} />
-          <ManagePosts isError={isError} isLoading={isLoading} posts={posts} />
-        </Box>
+        <ManageAllPosts />
       </TabPanel>
       <TabPanel value={value} index={1} style={{ width: "62vw" }}>
         <Typography variant="h4" align="center" color={"primary"}>

@@ -19,7 +19,7 @@ const handler = nextConnect({
 handler.get(async (req, res, next) => {
   try {
     // TODO: validate req params (pagination)
-    let { page, limit } = await joiPaginationSchema.validateAsync(req.query);
+    let { page, limit, sort } = await joiPaginationSchema.validateAsync(req.query);
 
     // TODO: pagination
     if (!page) page = 1;
@@ -27,11 +27,13 @@ handler.get(async (req, res, next) => {
     // TODO: find post
     if (!limit) limit = 10;
 
+    if(!sort) sort = 1;
+
     const skip = (page - 1) * limit;
 
     await db.connect();
 
-    const posts = await Post.find().skip(skip).limit(limit).sort([['episodes', 'descending']]).exec();
+    const posts = await Post.find().skip(skip).limit(limit).sort([['chapters', sort]]).exec();
 
     const total = await Post.find().count();
 

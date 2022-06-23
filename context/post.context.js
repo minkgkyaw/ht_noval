@@ -1,25 +1,27 @@
-import React, { createContext, useContext, useReducer } from "react";
+import React, { createContext, useReducer } from "react";
 import axios from "axios";
 import useLogin from "../hook/useLogin";
 
-const PostContext = createContext({
+export const PostContext = createContext({
   posts: [],
   totalPosts: 0,
   page: 1,
   limit: 10,
-  successMessage: "",
   isLoading: false,
   isError: null,
   isUpdateLoading: false,
   isUpdateError: null,
+  isUpdateSuccess: null,
   isDeleteLoading: false,
   isDeleteError: null,
+  isDeleteSuccess: null,
   isAddNewPostLoading: false,
   isAddNewPostError: null,
-  fetchAllPosts: () => null,
-  addNewPost: () => null,
-  deletePost: () => null,
-  updatePost: () => null,
+  isAddNewPostSuccess: null,
+  fetchAllPosts: async (page, limit, sort) => null,
+  addNewPost: async (reqBody) => null,
+  deletePost: async (id) => null,
+  updatePost: async (id, reqBody) => null,
 });
 
 const initialState = {
@@ -27,15 +29,17 @@ const initialState = {
   totalPosts: 0,
   page: 1,
   limit: 10,
-  successMessage: "",
   isLoading: false,
   isError: null,
   isUpdateLoading: false,
   isUpdateError: null,
+  isUpdateSuccess: null,
   isDeleteLoading: false,
   isDeleteError: null,
+  isDeleteSuccess: null,
   isAddNewPostLoading: false,
   isAddNewPostError: null,
+  isAddNewPostSuccess: null,
 };
 
 const actionTypes = {
@@ -85,67 +89,69 @@ const reducer = (state = initialState, { type, payload }) => {
         isUpdateLoading: true,
         successMessage: "",
         isUpdateError: null,
+        isUpdateSuccess: null
       };
     case actionTypes.UPDATED_POST_SUCCEED:
       return {
         ...state,
         isUpdateLoading: false,
         isUpdateError: null,
+        isUpdateSuccess: true,
         posts: state.posts.map((post) =>
           post.id === payload.id ? (post = payload) : post
         ),
-        successMessage: "Post was successfully updated",
       };
     case actionTypes.UPDATE_POST_FAILED:
       return {
         ...state,
         isUpdateLoading: false,
         isUpdateError: payload,
-        successMessage: "",
+        isUpdateSuccess: false,
       };
     case actionTypes.START_DELETE_POST:
       return {
         ...state,
         isDeleteLoading: true,
         isDeleteError: null,
-        successMessage: "",
+        isDeleteSuccess: null
       };
     case actionTypes.DELETE_POST_FAILED:
       return {
         ...state,
         isDeleteLoading: false,
         isDeleteError: payload,
-        successMessage: "",
+        isDeleteSuccess: false
       };
     case actionTypes.DELETE_POST_SUCCEED:
       return {
         ...state,
         isDeleteError: null,
         isDeleteLoading: false,
+        isDeleteSuccess: true,
         posts: state.posts.filter((post) => post.id !== payload),
-        successMessage: "Post has been successfully deleted",
       };
     case actionTypes.START_ADD_NEW_POST:
       return {
         ...state,
         isAddNewPostLoading: true,
         isAddNewPostError: null,
-        successMessage: "",
+        isAddNewPostSuccess: null,
       };
     case actionTypes.ADD_NEW_POST_FAILED:
       return {
         ...state,
         isAddNewPostError: payload,
         isAddNewPostLoading: false,
-        successMessage: "",
+        isAddNewPostSuccess: false,
       };
-    case actionTypes.ADD_NEW_POST_SUCCEED:
+    case actionTypes.ADD_NEW_POST_SUCCEED: {
       return {
         ...state,
         isAddNewPostLoading: false,
         isAddNewPostError: null,
-        successMessage: "Successfully created new posts",
+        isAddNewPostSuccess: true
       };
+    }
     default:
       return state;
   }
@@ -154,56 +160,40 @@ const reducer = (state = initialState, { type, payload }) => {
 const PostContextProvider = ({ children }) => {
   const { token } = useLogin();
 
-  const { state, dispatch } = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, initialState);
 
-  const {
-    successMessage,
-    isLoading,
-    isAddNewPostLoading,
-    isUpdateLoading,
-    isDeleteLoading,
-    isError,
-    isAddNewPostError,
-    isUpdateError,
-    isDeleteError,
-    posts,
-    totalPosts,
-    limit,
-    page,
-  } = state;
-
-  const fetchAllPosts = async (page = 1, limit = 10) => {
+  const fetchAllPosts = async (page = 1, limit = 10, sort= 1) => {
     dispatch({ type: actionTypes.START_FETCHING_POSTS });
     try {
       const { data } = await axios.get(
-        `/api/posts?page=${page}&limit=${limit}`
+        `/api/posts?page=${page}&limit=${limit}&sort=${sort}`
       );
       const payload = {
         posts: data?.posts || [],
-        totalPosts: data?.meta?.totalPosts || 0,
+        totalPosts: data?.meta?.total || 0,
         page: data?.meta?.page || 1,
         limit: data?.meta?.limit || 10,
       };
       return dispatch({ type: actionTypes.FETCHING_POSTS_SUCCEED, payload });
     } catch (err) {
-      const payload = err?.response ? err?.response?.data : err?.message;
+      const payload = err?.response ? err?.response?.data : err;
       return dispatch({ type: actionTypes.FETCHING_POSTS_FAILED, payload });
     }
   };
 
-  const addNewPost = async (data) => {
+  const addNewPost = async (reqBody) => {
     dispatch({ type: actionTypes.START_ADD_NEW_POST });
     try {
-      const { data } = await axios.post("/api/posts", data, {
+      const { data } = await axios.post("/api/posts", reqBody, {
         headers: {
           authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-      if (data) return dispatch({ type: actionTypes.ADD_NEW_POST_SUCCEED });
-      return;
+      dispatch({ type: actionTypes.ADD_NEW_POST_SUCCEED, payload: data.post});
+      return fetchAllPosts(1, 5, -1)
     } catch (err) {
-      const payload = err?.response ? err?.response?.data : err?.message;
+      const payload = err?.response ? err?.response?.data : err;
       return dispatch({ type: actionTypes.ADD_NEW_POST_FAILED, payload });
     }
   };
@@ -221,14 +211,14 @@ const PostContextProvider = ({ children }) => {
         payload: data?.meta?.id,
       });
     } catch (err) {
-      const payload = err?.response ? err?.response?.data : err?.message;
+      const payload = err?.response ? err?.response?.data : err;
       return dispatch({ type: actionTypes.DELETE_POST_FAILED, payload });
     }
   };
 
-  const updatePost = async (id, data) => {
+  const updatePost = async (id, reqBody) => {
     try {
-      const { data } = await axios.patch(`api/posts/${id}`, data, {
+      const { data } = await axios.patch(`api/posts/${id}`, reqBody, {
         headers: {
           authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -240,30 +230,19 @@ const PostContextProvider = ({ children }) => {
         payload: data?.posts,
       });
     } catch (err) {
-      const payload = err?.response ? err?.response?.data : err?.message;
+      const payload = err?.response ? err?.response?.data : err;
       return dispatch({ type: actionTypes.UPDATE_POST_FAILED, payload });
     }
   };
 
   const value = {
-    successMessage,
-    isLoading,
-    isAddNewPostLoading,
-    isUpdateLoading,
-    isDeleteLoading,
-    isError,
-    isAddNewPostError,
-    isUpdateError,
-    isDeleteError,
-    posts,
-    totalPosts,
-    limit,
-    page,
+    ...state,
     fetchAllPosts,
     addNewPost,
     deletePost,
     updatePost,
   };
+
   return <PostContext.Provider value={value}>{children}</PostContext.Provider>;
 };
 
