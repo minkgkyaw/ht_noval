@@ -1,6 +1,8 @@
-import { createContext, useReducer, useState, useEffect } from "react";
+import { createContext, useReducer} from "react";
 import Cookie from 'js-cookie'
 import axios from "axios";
+
+axios.defaults.baseURL = process.env.BASE_API_URL || 'http://localhost:3000/api';
 
 export const LoginUserContext = createContext({
   token: Cookie.get('token')? Cookie.get('token') : null,
@@ -45,7 +47,7 @@ const LoginUserProvider = ({ children }) => {
   const loginHandler = async (body) => {
     dispatch({ type: actionsType.LOGIN_START });
     try {
-      const { data } = await axios.post("/api/auth/login", body, {
+      const { data } = await axios.post("/auth/login", body, {
         headers: {
           "Content-Type": "application/json",
         },

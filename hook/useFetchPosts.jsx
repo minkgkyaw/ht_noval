@@ -6,9 +6,7 @@ const fetcher = (url) =>
     .get(url)
     .then((res) => res.data)
 
-const url = "/api/posts";
-
-export const useGetPosts = () => {
+export const usePosts = (url) => {
   const {  data, error } = useSWR(url, fetcher);
 
   return {

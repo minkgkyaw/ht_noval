@@ -30,3 +30,8 @@ export const joiUpdatePostSchema = joi.object().keys({
   chapters: joi.number().min(1).max(4000),
   body: joi.string().min(5000).max(25000),
 });
+
+export const yupUpdatePostSchema = yup.object().shape({
+  chapters: yup.number().min(1, 'Chapters must be a least 1').max(4000, "Chapters must be lower than 4000"),
+  body: yup.string().min(5000, 'Body must be at least 5000 characters').max(25000, "Body must be lower than 25000 characters"),
+})

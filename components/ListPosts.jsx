@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useContext, useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import { styled } from "@mui/material/styles";
@@ -28,6 +29,7 @@ import { Tooltip } from "@mui/material";
 import { Zoom } from "@mui/material";
 import { PostContext } from "../context/post.context";
 import { useRouter } from "next/router";
+import { toast } from "react-toastify";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -117,11 +119,9 @@ TablePaginationActions.propTypes = {
   page: PropTypes.number.isRequired,
   rowsPerPage: PropTypes.number.isRequired,
 };
-
 const ManagePosts = () => {
   const router = useRouter();
   const [page, setPage] = React.useState(0);
-
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
   const {
@@ -132,6 +132,12 @@ const ManagePosts = () => {
     totalPosts,
     updatePost,
     deletePost,
+    isDeleteError,
+    isDeleteSuccess,
+    isUpdateError,
+    isUpdateSuccess,
+    resetDeletePostState,
+    resetUpdatePostState,
   } = useContext(PostContext);
 
   useEffect(() => {
@@ -142,13 +148,22 @@ const ManagePosts = () => {
     fetchPosts();
   }, [page, rowsPerPage]);
 
+  useEffect(() => {
+    const showAlert = () => {
+      if (isDeleteError) toast.error(isDeleteError?.message);
+      else if (isDeleteSuccess) toast.success("Successfully deleted.");
+    };
+    showAlert();
+    resetDeletePostState();
+  }, [isDeleteError, isDeleteSuccess]);
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+    return setRowsPerPage(parseInt(event.target.value, 10));
   };
 
   return (
@@ -188,7 +203,6 @@ const ManagePosts = () => {
                 <StyledTableCell>Chapters</StyledTableCell>
                 <StyledTableCell align="center">Description</StyledTableCell>
                 <StyledTableCell align="center">Created At</StyledTableCell>
-                <StyledTableCell align="center">Edit</StyledTableCell>
                 <StyledTableCell align="center">Delete</StyledTableCell>
               </TableRow>
             </TableHead>
@@ -198,19 +212,31 @@ const ManagePosts = () => {
                 return (
                   <StyledTableRow
                     key={post.chapters}
-                    sx={{cursor: 'pointer'}}
-                    onClick={() => router.push(`/admin/view/post/${post.id}`)}
+                    sx={{ cursor: "pointer" }}
                   >
-                    <StyledTableCell
-                      component="th"
-                      scope="row"
-                      sx={{cursor: 'pointer'}}
-                    >
-                      {post.chapters}
-                    </StyledTableCell>
-                    <StyledTableCell align="left" sx={{cursor: 'pointer'}}>
-                      {post.body.slice(0, 50)}...
-                    </StyledTableCell>
+                    <Tooltip title="Click for more detail">
+                      <StyledTableCell
+                        component="th"
+                        scope="row"
+                        sx={{ cursor: "pointer" }}
+                        onClick={() =>
+                          router.push(`/admin/view/posts/${post.id}`)
+                        }
+                      >
+                        {post.chapters}
+                      </StyledTableCell>
+                    </Tooltip>
+                    <Tooltip title="Click for more detail">
+                      <StyledTableCell
+                        align="left"
+                        sx={{ cursor: "pointer" }}
+                        onClick={() =>
+                          router.push(`/admin/view/posts/${post.id}`)
+                        }
+                      >
+                        {post.body.slice(0, 75)}...
+                      </StyledTableCell>
+                    </Tooltip>
                     <Tooltip
                       title={createdAt}
                       TransitionComponent={Zoom}
@@ -221,22 +247,22 @@ const ManagePosts = () => {
                       <StyledTableCell
                         align="center"
                         sx={{ cursor: "default" }}
+                        onClick={() =>
+                          router.push(`/admin/view/posts/${post.id}`)
+                        }
                       >
                         {moment(post.createdAt).format("DD-MM-YYYY")}
                       </StyledTableCell>
                     </Tooltip>
                     <StyledTableCell align="right">
-                      <IconButton color="info">
-                        <ModeEditOutlineIcon fontSize="inherit" />
-                      </IconButton>
-                    </StyledTableCell>
-                    <StyledTableCell
-                      align="right"
-                      onClick={() => deletePost(post.id)}
-                    >
-                      <IconButton color="error">
-                        <DeleteIcon />
-                      </IconButton>
+                      <Tooltip title="Quick Delete post" arrow>
+                        <IconButton
+                          color="error"
+                          onClick={() => deletePost(post.id)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
                     </StyledTableCell>
                   </StyledTableRow>
                 );
@@ -245,7 +271,7 @@ const ManagePosts = () => {
             <TableFooter>
               <TableRow>
                 <TablePagination
-                  rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
+                  rowsPerPageOptions={[5, 10, 25, 50, 75, 100, { label: "All", value: -1 }]}
                   colSpan={3}
                   count={totalPosts}
                   rowsPerPage={rowsPerPage}

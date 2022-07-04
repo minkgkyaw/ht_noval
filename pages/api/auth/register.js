@@ -28,7 +28,16 @@ handler.post(async (req, res, next) => {
         createHttpError(400, `User already registered as ${existedUser.role}`)
       );
 
-    // TODO: create new user
+    // check is req another admin role, then return 400 error
+    if(data.role === 'Admin') {
+      await db.connect();
+      const isExistedAdmin = await User.find({role: 'Admin'}).count()
+      await db.disconnect();
+
+      if(isExistedAdmin >= 2 ) return next(createHttpError(400, 'Admins already existed'))
+    }
+
+       // TODO: create new user
     await db.connect();
 
     const newUser = new User(data);

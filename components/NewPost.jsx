@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import * as React from "react";
 import { Button } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
@@ -13,7 +14,7 @@ import { PostContext } from "../context/post.context";
 import { LoadingButton } from "@mui/lab";
 import SaveIcon from "@mui/icons-material/Save";
 import { toast } from "react-toastify";
-import { Alert, AlertTitle } from '@mui/material'
+import { Alert, AlertTitle } from "@mui/material";
 
 const style = {
   position: "absolute",
@@ -36,30 +37,30 @@ const NewPost = () => {
     isAddNewPostLoading,
     isAddNewPostError,
     isAddNewPostSuccess,
+    resetAddPostState,
   } = React.useContext(PostContext);
-
 
   React.useEffect(() => {
     const showAlert = () => {
-      if(isAddNewPostError) return toast.error(isAddNewPostError?.message);
-    if(isAddNewPostSuccess) return toast.success('Successfully created a new chapter.')
-    }
+      if (isAddNewPostError) toast.error(isAddNewPostError?.message);
+      else if (isAddNewPostSuccess)
+        toast.success("Successfully created a new chapter.");
+      return setTimeout(() => resetAddPostState(), 3000);
+    };
     showAlert();
-    return () => {}
-  }, [ isAddNewPostError, isAddNewPostSuccess])
+  }, [isAddNewPostError, isAddNewPostSuccess]);
 
   const initialValues = {
     chapters: totalPosts + 1,
     body: "",
   };
 
-
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
   const onSubmitHandler = async (value) => {
     await addNewPost(value);
-    return handleClose();
   };
 
   return (

@@ -6,12 +6,12 @@ import { CardActions } from "@mui/material";
 import { Container } from "@mui/material";
 import React from "react";
 import Lottie from "react-lottie";
-import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
-import * as animationData from "../animations/page_not_found_2.json";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import * as animationData from "../animations/server_error.json";
 import { useRouter } from "next/router";
 
-const NotFoundPage = () => {
-  const router = useRouter()
+const Error = () => {
+  const router = useRouter();
 
   const defaultOptions = {
     loop: true,
@@ -32,15 +32,24 @@ const NotFoundPage = () => {
             loop={true}
           />
           <Typography variant="h6" color="text.secondary" align="center">
-            We&apos;re sorry, the page you requested could not be found
+            We&apos;re sorry, something went wrong (hope fix it soon).
           </Typography>
         </CardContent>
-        <CardActions sx={{alignItems: 'center', alignContent: 'center'}}>
-        <Button startIcon={<HomeOutlinedIcon />} sx={{borderRadius: 30, px:2, mb:2, mx: 'auto'}} size="large" variant="contained" color="info" onClick={() => router.push('/')}>Go to Home</Button>
-      </CardActions>
+        <CardActions sx={{ alignItems: "center", alignContent: "center" }}>
+          <Button
+            startIcon={<HomeOutlinedIcon />}
+            sx={{ borderRadius: 30, px: 2, mb: 2, mx: "auto" }}
+            size="large"
+            variant="contained"
+            color="info"
+            onClick={() => router.push("/")}
+          >
+            Go to Home
+          </Button>
+        </CardActions>
       </Card>
     </Container>
   );
 };
 
-export default NotFoundPage;
+export default Error;

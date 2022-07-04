@@ -12,6 +12,7 @@ const handler = nextConnect({
   onNoMatch: onNoMatch
 }).use(morgan('tiny')).use(isAuth)
 
+// get user by id
 handler.get(async (req, res, next) => {
   try {
     // TODO: validate req query id is mongo id
@@ -34,6 +35,31 @@ handler.get(async (req, res, next) => {
     })
   } catch (err) {
     if(err.isJoi) err.status = 422;
+    return next(err)
+  }
+})
+
+// delete user
+handler.delete(async (req, res, next) => {
+  try {
+    // TODO: validate req query id is mongo id
+    const {id} = await joiUserIdSchema.validateAsync(req.query)
+
+    // find user by id and delete
+    await db.connect();
+    const user = await User.findByIdAndDelete(id)
+    await db.disconnect();
+
+    // TODO: return 404 error if user not found
+    if(!user) return next(createHttpError(404))
+
+    return res.status(200).json({
+      meta: {
+        id,
+        message: 'Successfully deleted'
+      }
+    })
+  } catch (err) {
     return next(err)
   }
 })

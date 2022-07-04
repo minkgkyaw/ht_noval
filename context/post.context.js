@@ -1,7 +1,8 @@
 import React, { createContext, useReducer } from "react";
 import axios from "axios";
-import useLogin from "../hook/useLogin";
+import useLogin from "../hook/useLogin"
 
+axios.defaults.baseURL = process.env.BASE_API_URL || 'http://localhost:3000/api';
 export const PostContext = createContext({
   posts: [],
   totalPosts: 0,
@@ -40,6 +41,13 @@ const initialState = {
   isAddNewPostLoading: false,
   isAddNewPostError: null,
   isAddNewPostSuccess: null,
+  resetAddPostState: () => null,
+  resetDeletePostState: () => null,
+  resetUpdatePostState: () => null,
+  fetchAllPosts: async () => [],
+  addNewPost: async (reqBody) => reqBody,
+  updatePost: async (id, reqBody) => {id, reqBody},
+  deletePost: async (id) => id,
 };
 
 const actionTypes = {
@@ -55,6 +63,9 @@ const actionTypes = {
   START_ADD_NEW_POST: "START_ADD_NEW_POST",
   ADD_NEW_POST_SUCCEED: "ADD_NEW_POST_SUCCEED",
   ADD_NEW_POST_FAILED: "ADD_NEW_POST_FAILED",
+  RESET_ADD_POST_STATE: "RESET_ADD_POST_STATE",
+  RESET_UPDATE_POST_STATE: "RESET_UPDATE_POST_STATE",
+  RESET_DELETE_POST_STATE: "RESET_DELETE_POST_STATE",
 };
 
 const reducer = (state = initialState, { type, payload }) => {
@@ -89,9 +100,9 @@ const reducer = (state = initialState, { type, payload }) => {
         isUpdateLoading: true,
         successMessage: "",
         isUpdateError: null,
-        isUpdateSuccess: null
+        isUpdateSuccess: null,
       };
-    case actionTypes.UPDATED_POST_SUCCEED:
+    case actionTypes.UPDATED_POST_SUCCEED: {
       return {
         ...state,
         isUpdateLoading: false,
@@ -101,6 +112,7 @@ const reducer = (state = initialState, { type, payload }) => {
           post.id === payload.id ? (post = payload) : post
         ),
       };
+    }
     case actionTypes.UPDATE_POST_FAILED:
       return {
         ...state,
@@ -113,14 +125,14 @@ const reducer = (state = initialState, { type, payload }) => {
         ...state,
         isDeleteLoading: true,
         isDeleteError: null,
-        isDeleteSuccess: null
+        isDeleteSuccess: null,
       };
     case actionTypes.DELETE_POST_FAILED:
       return {
         ...state,
         isDeleteLoading: false,
         isDeleteError: payload,
-        isDeleteSuccess: false
+        isDeleteSuccess: false,
       };
     case actionTypes.DELETE_POST_SUCCEED:
       return {
@@ -149,9 +161,30 @@ const reducer = (state = initialState, { type, payload }) => {
         ...state,
         isAddNewPostLoading: false,
         isAddNewPostError: null,
-        isAddNewPostSuccess: true
+        isAddNewPostSuccess: true,
       };
     }
+    case actionTypes.RESET_ADD_POST_STATE:
+      return {
+        ...state,
+        isAddNewPostError: null,
+        isAddNewPostLoading: false,
+        isAddNewPostSuccess: null,
+      };
+    case actionTypes.RESET_DELETE_POST_STATE:
+      return {
+        ...state,
+        isDeleteError: null,
+        isDeleteLoading: false,
+        isDeleteSuccess: null,
+      };
+    case actionTypes.RESET_UPDATE_POST_STATE:
+      return {
+        ...state,
+        isUpdateError: null,
+        isUpdateSuccess: null,
+        isUpdateLoading: false,
+      };
     default:
       return state;
   }
@@ -162,11 +195,11 @@ const PostContextProvider = ({ children }) => {
 
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  const fetchAllPosts = async (page = 1, limit = 10, sort= 1) => {
+  const fetchAllPosts = async (page = 1, limit = 10, sort = 1) => {
     dispatch({ type: actionTypes.START_FETCHING_POSTS });
     try {
       const { data } = await axios.get(
-        `/api/posts?page=${page}&limit=${limit}&sort=${sort}`
+        `/posts?page=${page}&limit=${limit}&sort=${sort}`
       );
       const payload = {
         posts: data?.posts || [],
@@ -184,14 +217,14 @@ const PostContextProvider = ({ children }) => {
   const addNewPost = async (reqBody) => {
     dispatch({ type: actionTypes.START_ADD_NEW_POST });
     try {
-      const { data } = await axios.post("/api/posts", reqBody, {
+      const { data } = await axios.post("/posts", reqBody, {
         headers: {
           authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-      dispatch({ type: actionTypes.ADD_NEW_POST_SUCCEED, payload: data.post});
-      return fetchAllPosts(1, 5, -1)
+      dispatch({ type: actionTypes.ADD_NEW_POST_SUCCEED, payload: data.post });
+      return fetchAllPosts(1, 5, -1);
     } catch (err) {
       const payload = err?.response ? err?.response?.data : err;
       return dispatch({ type: actionTypes.ADD_NEW_POST_FAILED, payload });
@@ -201,7 +234,7 @@ const PostContextProvider = ({ children }) => {
   const deletePost = async (id) => {
     dispatch({ type: actionTypes.START_DELETE_POST });
     try {
-      const { data } = await axios.delete(`/api/posts/${id}`, {
+      const { data } = await axios.delete(`/posts/${id}`, {
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -218,16 +251,17 @@ const PostContextProvider = ({ children }) => {
 
   const updatePost = async (id, reqBody) => {
     try {
-      const { data } = await axios.patch(`api/posts/${id}`, reqBody, {
+      const url = `/posts/${id}`;
+
+      const { data } = await axios.patch(url, reqBody, {
         headers: {
           authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-
       return dispatch({
         type: actionTypes.UPDATED_POST_SUCCEED,
-        payload: data?.posts,
+        payload: data?.post,
       });
     } catch (err) {
       const payload = err?.response ? err?.response?.data : err;
@@ -235,12 +269,24 @@ const PostContextProvider = ({ children }) => {
     }
   };
 
+  const resetAddPostState = () =>
+    dispatch({ type: actionTypes.RESET_ADD_POST_STATE });
+
+  const resetUpdatePostState = () =>
+    dispatch({ type: actionTypes.RESET_UPDATE_POST_STATE });
+
+  const resetDeletePostState = () =>
+    dispatch({ type: actionTypes.RESET_DELETE_POST_STATE });
+
   const value = {
     ...state,
     fetchAllPosts,
     addNewPost,
     deletePost,
     updatePost,
+    resetAddPostState,
+    resetDeletePostState,
+    resetUpdatePostState,
   };
 
   return <PostContext.Provider value={value}>{children}</PostContext.Provider>;

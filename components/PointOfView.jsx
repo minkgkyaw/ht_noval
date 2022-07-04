@@ -60,7 +60,7 @@ export default function PointOfView() {
           <Typography> {item.title} </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography>
+          <Typography paragraph color={"text.secondary"} sx={{whiteSpace: "pre-wrap"}}>
             {item.description}
           </Typography>
         </AccordionDetails>

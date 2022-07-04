@@ -12,6 +12,7 @@ import LoginUserProvider from "../context/login.context";
 import PostContextProvider from "../context/post.context";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import UserProvider from "../context/user.context";
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();
 
@@ -24,26 +25,28 @@ export default function MyApp(props) {
         <meta name="viewport" content="initial-scale=1, width=device-width" />
       </Head>
       <LoginUserProvider>
-        <PostContextProvider>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <Layout>
-              <Component {...pageProps} />
-              <ToastContainer
-                theme="colored"
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-              />
-            </Layout>
-          </ThemeProvider>
-        </PostContextProvider>
+        <UserProvider>
+          <PostContextProvider>
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <Layout>
+                <Component {...pageProps} />
+                <ToastContainer
+                  theme="colored"
+                  position="top-right"
+                  autoClose={3000}
+                  hideProgressBar={false}
+                  newestOnTop={false}
+                  closeOnClick
+                  rtl={false}
+                  pauseOnFocusLoss
+                  draggable
+                  pauseOnHover
+                />
+              </Layout>
+            </ThemeProvider>
+          </PostContextProvider>
+        </UserProvider>
       </LoginUserProvider>
     </CacheProvider>
   );

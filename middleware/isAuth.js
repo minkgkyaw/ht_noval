@@ -27,6 +27,7 @@ export const isAuth = async (req, res, next) => {
 
     if (!verifiedUser) return res.status(401).json({ message: "Unauthorized" });
 
+    req.user = verifiedUser;
     return next();
   } catch (err) {
     if(err.name === 'JsonWebTokenError') err.status = 401

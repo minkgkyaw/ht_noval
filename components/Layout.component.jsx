@@ -121,79 +121,90 @@ const Layout = (props) => {
     window !== undefined ? () => window().document.body : undefined;
 
   return (
-    <Box sx={{ display: "flex" }}>
-      <AppBar component="nav">
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{
-              mr: 2,
-              display: { sm: "none", xs: "flex" },
-              cursor: "pointer",
-            }}
-          >
-            <MenuIcon />
-          </IconButton>
-          {/* for large screen  */}
-          <Link href={"/"} passHref>
-            <Typography
-              variant="h6"
-              component="a"
+    <>
+      <Box sx={{ display: "flex" }}>
+        <AppBar component="nav">
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
               sx={{
-                display: { xs: "none", sm: "block" },
-                mr: 10,
+                mr: 2,
+                display: { sm: "none", xs: "flex" },
                 cursor: "pointer",
               }}
             >
-              Hein Htet Novel
-            </Typography>
-          </Link>
-          <Box sx={{ display: { xs: "none", sm: "flex" }, flexGrow: 1 }}>
-            {navItems.map((item) => (
-              <Tooltip title={`Go to ${item}`} key={item}>
-                <Button
-                  sx={{ color: "#fff", mx: 1 }}
-                  onClick={() => handleRoute(item)}
-                >
-                  {item}
-                </Button>
-              </Tooltip>
-            ))}
-          </Box>
-          {/* for admin account control/ setting */}
-          {isAuthUser ? adminMiniMenu : null}
-        </Toolbar>
-      </AppBar>
-      {/* for mobile screen */}
-      <Box component="nav">
-        <Drawer
-          container={container}
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
-          sx={{
-            display: { xs: "block", sm: "none" },
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
-              width: drawerWidth,
-            },
-          }}
+              <MenuIcon />
+            </IconButton>
+            {/* for large screen  */}
+            <Link href={"/"} passHref>
+              <Typography
+                variant="h6"
+                component="a"
+                sx={{
+                  display: { xs: "none", sm: "block" },
+                  mr: 10,
+                  cursor: "pointer",
+                }}
+              >
+                Hein Htet Novel
+              </Typography>
+            </Link>
+            <Box sx={{ display: { xs: "none", sm: "flex" }, flexGrow: 1 }}>
+              {navItems.map((item) => (
+                <Tooltip title={`Go to ${item}`} key={item}>
+                  <Button
+                    sx={{ color: "#fff", mx: 1 }}
+                    onClick={() => handleRoute(item)}
+                  >
+                    {item}
+                  </Button>
+                </Tooltip>
+              ))}
+            </Box>
+            {/* for admin account control/ setting */}
+            {isAuthUser ? adminMiniMenu : null}
+          </Toolbar>
+        </AppBar>
+        {/* for mobile screen */}
+        <Box component="nav">
+          <Drawer
+            container={container}
+            variant="temporary"
+            open={mobileOpen}
+            onClose={handleDrawerToggle}
+            ModalProps={{
+              keepMounted: true, // Better open performance on mobile.
+            }}
+            sx={{
+              display: { xs: "block", sm: "none" },
+              "& .MuiDrawer-paper": {
+                boxSizing: "border-box",
+                width: drawerWidth,
+              },
+            }}
+          >
+            {drawer}
+          </Drawer>
+        </Box>
+        {/* for main section */}
+        <Container
+          component={"main"}
+          maxWidth="lg"
+          sx={{ py: { xs: 3, sm: 5 } }}
         >
-          {drawer}
-        </Drawer>
+          <Toolbar />
+          {props.children}
+        </Container>
       </Box>
-      {/* for main section */}
-      <Container component={'main'} maxWidth="lg" sx={{py: {xs:3, sm: 5}}}>
-        <Toolbar />
-        {props.children}
-      </Container>
-    </Box>
+      <footer style={{display: 'flex', marginBottom: 30}}>
+        <Typography variant="caption" align="center" mx={'auto'}>
+          ❤️ Powered by Min Kg Kyaw
+        </Typography>
+      </footer>
+    </>
   );
 };
 

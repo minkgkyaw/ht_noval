@@ -27,7 +27,7 @@ handler.get(async (req, res, next) => {
     // TODO: find post
     if (!limit) limit = 10;
 
-    if(!sort) sort = 1;
+    if(!sort) sort = -1;
 
     const skip = (page - 1) * limit;
 

@@ -12,6 +12,13 @@ import NewPost from "../../components/NewPost";
 import ManagePosts from "../../components/ListPosts";
 import { useGetPosts } from "../../hook/useFetchPosts";
 import ManageAllPosts from "../../components/ManageAllPosts";
+import useLogin from "../../hook/useLogin";
+import { useRouter } from "next/router";
+import NotFoundPage from "../404";
+import ManageAllUser from "../../components/ManageAllUser";
+import useGetUserInfo from "../../hook/useGetUserInfo";
+import Loading from "../../components/Loading";
+import Error from "../../components/Error";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -54,12 +61,43 @@ function a11yProps(index) {
   };
 }
 
+const redirectToNotFound = () => (<NotFoundPage/>)
+
 export default function Dashboard() {
-  const [value, setValue] = React.useState(0);
+  const { token } = useLogin();
+  const {isError, isLoading, user} = useGetUserInfo();
+  const [value, setValue] = React.useState(2);
+  const [isAuthUser, setIsAuthUser] = React.useState(null)
+  const [notAdminOrDev, setNotAdminOrDev] = React.useState(true)
+
+  React.useEffect(() => {
+    if(!token) return setIsAuthUser(false)
+    setIsAuthUser(true)
+  }, [token])
+
+  React.useEffect(() => {
+    const setRole = () => {
+      if(user?.role === 'Admin'){
+        return setNotAdminOrDev(false)
+      } else if (user?.role === 'Developer') {
+        return setNotAdminOrDev(false)
+      }
+      return setNotAdminOrDev(true);
+    }
+    setRole();
+  }, [user])
+
+  if(isAuthUser === false) return <NotFoundPage/>
+
+  if(isLoading) return <Loading/>
+
+  if(isError) return <Error/>
+
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
+
 
   return (
     <Box
@@ -98,6 +136,7 @@ export default function Dashboard() {
           iconPosition="start"
           label="Manage Users"
           {...a11yProps(2)}
+          disabled={notAdminOrDev}
         />
         <Tab
           sx={{ my: 1 }}
@@ -115,10 +154,8 @@ export default function Dashboard() {
           Manage All E-Books
         </Typography>
       </TabPanel>
-      <TabPanel value={value} index={2} style={{ width: "62vw" }}>
-        <Typography variant="h4" align="center" color={"primary"}>
-          Manage All Users
-        </Typography>
+      <TabPanel value={value} index={2} style={{ width: "62vw" }} >
+        <ManageAllUser />
       </TabPanel>
       <TabPanel value={value} index={3} style={{ width: "62vw" }}>
         <Typography variant="h4" align="center" color={"primary"}>

@@ -15,6 +15,8 @@ import { ErrorMessage } from "formik";
 import useLogin from "../../hook/useLogin";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import LoginIcon from '@mui/icons-material/Login';
+import { LoadingButton } from "@mui/lab";
 
 const initialValues = {
   email: "",
@@ -129,15 +131,9 @@ const LoginPage = () => {
                       mx: "auto",
                     }}
                   >
-                    <Button variant="contained" type="submit">
+                    <LoadingButton loading={isLoading} startIcon={<LoginIcon/>} size="large" variant="contained" type="submit">
                       Login
-                    </Button>
-                    <Typography align="center" sx={{ my: 1 }}>
-                      OR
-                    </Typography>
-                    <Link href={"/admin/login/forget_password"} passHref>
-                      <Button>Forget password</Button>
-                    </Link>
+                    </LoadingButton>
                   </Box>
                 </Box>
               </Form>

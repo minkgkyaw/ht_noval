@@ -6,7 +6,7 @@ const useCreatePost = () => {
   const {token} = useLogin()
 
   const createPost = async (data) =>
-    await axios.post("/api/posts", data, {
+    await axios.post("/posts", data, {
       headers: {
         authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
